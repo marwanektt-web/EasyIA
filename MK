@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Générateur de Pseudo</title>
+
+<style>
+body{
+font-family: Arial;
+text-align:center;
+background:#111;
+color:white;
+margin-top:100px;
+}
+
+button{
+padding:15px;
+font-size:18px;
+background:#00ff99;
+border:none;
+cursor:pointer;
+}
+
+#pseudo{
+font-size:30px;
+margin:20px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🎮 Générateur de Pseudo</h1>
+
+<div id="pseudo">Clique pour générer</div>
+
+<button onclick="generer()">Générer un pseudo</button>
+
+<script>
+
+let mots1 = ["Dark","Shadow","Ultra","Crazy","Ghost","Mega","Fire","Ice"];
+let mots2 = ["Wolf","Tiger","Ninja","Sniper","Dragon","Hunter","King"];
+
+function generer(){
+
+let a = mots1[Math.floor(Math.random()*mots1.length)];
+let b = mots2[Math.floor(Math.random()*mots2.length)];
+let nombre = Math.floor(Math.random()*999);
+
+document.getElementById("pseudo").innerText = a + b + nombre;
+
+}
+
+</script>
+
+</body>
+</html>
