@@ -4,55 +4,41 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>StudyAI - IA gratuite</title>
+<title>StudyAI</title>
 
 <style>
 
 /* GLOBAL */
 body{
 margin:0;
-font-family:system-ui, -apple-system;
-background:#0f172a;
-color:#e5e7eb;
+font-family:system-ui;
+background:#343541;
+color:white;
 display:flex;
 height:100vh;
 }
 
 /* SIDEBAR */
 .sidebar{
-width:240px;
-background:#020617;
-padding:15px;
+width:260px;
+background:#202123;
+padding:10px;
 display:flex;
 flex-direction:column;
-border-right:1px solid #1e293b;
 }
 
 .logo{
-font-size:18px;
-font-weight:bold;
-margin-bottom:15px;
+font-size:16px;
+margin-bottom:10px;
 }
 
 .new-chat{
-background:#1e293b;
-padding:12px;
-border-radius:10px;
+border:1px solid #555;
+padding:10px;
 cursor:pointer;
 margin-bottom:10px;
 text-align:center;
-transition:0.2s;
-}
-
-.new-chat:hover{
-background:#334155;
-}
-
-.history{
-flex:1;
-overflow-y:auto;
-font-size:13px;
-opacity:0.8;
+border-radius:5px;
 }
 
 /* CHAT */
@@ -62,92 +48,86 @@ display:flex;
 flex-direction:column;
 }
 
+/* CHAT AREA */
 .chat{
 flex:1;
 overflow-y:auto;
-padding:40px;
+display:flex;
+flex-direction:column;
+align-items:center;
+padding:20px;
+}
+
+/* WRAPPER */
+.message-wrapper{
+width:100%;
+max-width:700px;
 }
 
 /* MESSAGES */
 .message{
-max-width:700px;
-padding:16px;
-margin:12px 0;
-border-radius:14px;
+padding:18px;
+margin:5px 0;
+border-radius:6px;
 line-height:1.6;
-animation:fadeIn 0.3s ease;
 }
 
 .user{
-background:#2563eb;
-margin-left:auto;
-color:white;
+background:#444654;
 }
 
 .bot{
-background:#1e293b;
+background:#343541;
+border-top:1px solid #565869;
 }
 
 /* INPUT */
 .input-box{
+background:#40414f;
 padding:15px;
-background:#020617;
-border-top:1px solid #1e293b;
+display:flex;
+justify-content:center;
+}
+
+.input-inner{
+width:100%;
+max-width:700px;
 display:flex;
 }
 
 input{
 flex:1;
 padding:14px;
-border-radius:10px;
 border:none;
-background:#1e293b;
-color:white;
+border-radius:5px;
 font-size:15px;
-outline:none;
 }
 
 button{
 margin-left:10px;
-padding:14px 18px;
-background:#22c55e;
+padding:14px;
+background:#19c37d;
 border:none;
-border-radius:10px;
 color:white;
+border-radius:5px;
 cursor:pointer;
-font-weight:bold;
-transition:0.2s;
 }
 
-button:hover{
-transform:scale(1.05);
-}
-
-/* ANIMATION */
-@keyframes fadeIn{
-from{opacity:0; transform:translateY(10px);}
-to{opacity:1; transform:translateY(0);}
-}
-
-/* MOBILE */
-@media(max-width:700px){
-.sidebar{
-display:none;
-}
-.chat{
-padding:20px;
-}
+/* LOADING */
+.loading{
+opacity:0.6;
+font-style:italic;
 }
 
 </style>
+
 </head>
 
 <body>
 
 <div class="sidebar">
-<div class="logo">🚀 StudyAI</div>
-<div class="new-chat" onclick="newChat()">+ Nouvelle</div>
-<div class="history" id="history"></div>
+<div class="logo">🤖 StudyAI</div>
+<div class="new-chat" onclick="newChat()">+ Nouvelle conversation</div>
 </div>
 
 <div class="chat-container">
@@ -155,16 +135,17 @@ padding:20px;
 <div class="chat" id="chat"></div>
 
 <div class="input-box">
-<input id="input" placeholder="Pose ta question..." onkeydown="if(event.key==='Enter') send()">
+<div class="input-inner">
+<input id="input" placeholder="Envoyer un message..." onkeydown="if(event.key==='Enter') send()">
 <button onclick="send()">➤</button>
+</div>
 </div>
 
 </div>
 
 <script>
 
-let conversations = [];
-
+/* nouvelle conversation */
 function newChat(){
 document.getElementById("chat").innerHTML = "";
 }
@@ -179,6 +160,7 @@ if(i >= text.length) clearInterval(interval);
 },15);
 }
 
+/* envoyer message */
 async function send(){
 
 let input = document.getElementById("input");
@@ -186,24 +168,24 @@ let text = input.value;
 
 if(!text) return;
 
-// message user
+// USER
 document.getElementById("chat").innerHTML += 
-`<div class="message user">${text}</div>`;
+`<div class="message-wrapper">
+<div class="message user">${text}</div>
+</div>`;
 
-// message vide pour typing
+// BOT (loading)
 let id = "m"+Date.now();
 document.getElementById("chat").innerHTML += 
-`<div class="message bot" id="${id}"></div>`;
+`<div class="message-wrapper">
+<div class="message bot loading" id="${id}">⏳ ...</div>
+</div>`;
 
 // scroll
 document.getElementById("chat").scrollTop = 
 document.getElementById("chat").scrollHeight;
 
-// historique
-conversations.push(text);
-updateHistory();
-
-// appel IA gratuite
+// IA gratuite
 let reply = "";
 
 try{
@@ -219,20 +201,12 @@ reply = data[0]?.generated_text || "Réponse indisponible";
 reply = "⚠️ IA occupée, réessaie.";
 }
 
-// effet écriture
+// remplacer loading + typing
+document.getElementById(id).innerHTML = "";
 typeText(document.getElementById(id), reply);
 
 input.value = "";
 
-}
-
-function updateHistory(){
-let h = document.getElementById("history");
-h.innerHTML = "";
-
-conversations.slice(-10).forEach(c=>{
-h.innerHTML += `<div>💬 ${c}</div>`;
-});
 }
 
 </script>
