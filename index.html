@@ -2,33 +2,56 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>MK AI</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>MK AI - ChatGPT Gratuit</title>
+
+<!-- SEO -->
+<meta name="description" content="Utilise une IA gratuite comme ChatGPT sans inscription. Rapide, simple et efficace.">
 
 <style>
 
 body{
 margin:0;
-font-family:Arial;
-background:#0f172a;
+font-family:system-ui;
+background:#343541;
 color:white;
 display:flex;
+height:100vh;
 }
 
+/* SIDEBAR */
 .sidebar{
-width:220px;
-background:#020617;
-padding:20px;
+width:260px;
+background:#202123;
+padding:10px;
+display:flex;
+flex-direction:column;
 }
 
-.sidebar h2{
-margin-bottom:20px;
+.logo{
+font-size:18px;
+margin-bottom:10px;
 }
 
+.new-chat{
+padding:10px;
+border:1px solid #555;
+cursor:pointer;
+margin-bottom:10px;
+}
+
+.history{
+flex:1;
+overflow-y:auto;
+font-size:13px;
+}
+
+/* CHAT */
 .chat-container{
 flex:1;
 display:flex;
 flex-direction:column;
-height:100vh;
 }
 
 .chat{
@@ -38,49 +61,54 @@ padding:20px;
 }
 
 .message{
-margin:10px;
-padding:12px;
-border-radius:10px;
-max-width:70%;
+padding:15px;
+margin:10px 0;
+border-radius:8px;
+max-width:800px;
 }
 
 .user{
-background:#22c55e;
+background:#444654;
 margin-left:auto;
 }
 
 .bot{
-background:#1e293b;
+background:#343541;
+border-top:1px solid #555;
 }
 
+/* INPUT */
 .input-box{
 display:flex;
-padding:10px;
-background:#020617;
+padding:15px;
+background:#40414f;
 }
 
 input{
 flex:1;
-padding:10px;
+padding:15px;
 border:none;
 border-radius:5px;
+font-size:16px;
 }
 
 button{
-padding:10px;
-background:#22c55e;
+padding:15px;
+margin-left:10px;
+background:#19c37d;
 border:none;
 color:white;
 border-radius:5px;
-margin-left:10px;
 cursor:pointer;
 }
 
+/* PUB */
 .ad{
-background:#111;
-padding:10px;
-margin-top:20px;
+position:absolute;
+bottom:10px;
+left:10px;
 font-size:12px;
+opacity:0.7;
 }
 
 </style>
@@ -89,11 +117,12 @@ font-size:12px;
 <body>
 
 <div class="sidebar">
-<h2>MK AI 🚀</h2>
-<p>IA gratuite</p>
+<div class="logo">🤖 MK AI</div>
+<div class="new-chat" onclick="newChat()">+ Nouvelle conversation</div>
+<div class="history" id="history"></div>
 
 <div class="ad">
-💰 Pub ici (AdSense)
+💰 Pub (AdSense ici)
 </div>
 </div>
 
@@ -102,34 +131,21 @@ font-size:12px;
 <div class="chat" id="chat"></div>
 
 <div class="input-box">
-<input id="input" placeholder="Pose ta question...">
-<button onclick="send()">Envoyer</button>
+<input id="input" placeholder="Pose ta question..." onkeydown="if(event.key==='Enter') send()">
+<button onclick="send()">➤</button>
 </div>
 
 </div>
 
 <script>
 
-function fakeAI(text){
+let conversations = [];
 
-text = text.toLowerCase();
-
-if(text.includes("argent")){
-return "💰 Astuce : crée un site viral et ajoute des pubs.";
+function newChat(){
+document.getElementById("chat").innerHTML = "";
 }
 
-if(text.includes("site")){
-return "🌍 Utilise GitHub Pages pour créer un site gratuit.";
-}
-
-if(text.includes("bonjour")){
-return "👋 Salut ! Je suis MK AI.";
-}
-
-return "🤖 Réponse intelligente : " + text;
-}
-
-function send(){
+async function send(){
 
 let input = document.getElementById("input");
 let text = input.value;
@@ -140,20 +156,50 @@ if(!text) return;
 document.getElementById("chat").innerHTML += 
 `<div class="message user">${text}</div>`;
 
-// bot
-setTimeout(()=>{
-let reply = fakeAI(text);
-
+// loading
+let id = "l"+Date.now();
 document.getElementById("chat").innerHTML += 
-`<div class="message bot">${reply}</div>`;
+`<div class="message bot" id="${id}">⏳ MK AI écrit...</div>`;
 
+// scroll
 document.getElementById("chat").scrollTop = 
 document.getElementById("chat").scrollHeight;
 
-},500);
+// historique
+conversations.push(text);
+updateHistory();
+
+// IA gratuite
+let reply = "";
+
+try{
+let res = await fetch("https://api-inference.huggingface.co/models/facebook/blenderbot-400M-distill", {
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body: JSON.stringify({inputs:text})
+});
+
+let data = await res.json();
+reply = data[0]?.generated_text || "Réponse indisponible";
+}catch{
+reply = "⚠️ IA surchargée, réessaie.";
+}
+
+// afficher réponse
+document.getElementById(id).outerHTML =
+`<div class="message bot">${reply}</div>`;
 
 input.value = "";
 
+}
+
+function updateHistory(){
+let h = document.getElementById("history");
+h.innerHTML = "";
+
+conversations.slice(-10).forEach(c=>{
+h.innerHTML += `<div>💬 ${c}</div>`;
+});
 }
 
 </script>
